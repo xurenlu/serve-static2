@@ -53,6 +53,8 @@ function serveStatic (root, options) {
   // default redirect
   var redirect = opts.redirect !== false
 
+  let tryFile = opts.tryFile || ""
+
   // headers listener
   var setHeaders = opts.setHeaders
 
@@ -113,6 +115,12 @@ function serveStatic (root, options) {
 
     // forward errors
     stream.on('error', function error (err) {
+      if (err.statusCode === 404 && err.code === "ENOENT") {
+        if(tryFile) {
+          this.sendFile(root + tryFile)
+          return
+        }
+      }
       if (forwardError || !(err.statusCode < 500)) {
         next(err)
         return
